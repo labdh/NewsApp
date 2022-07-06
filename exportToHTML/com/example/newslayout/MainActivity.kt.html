@@ -1,0 +1,93 @@
+<html>
+<head>
+<title>MainActivity.kt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+MainActivity.kt</font>
+</center></td></tr></table>
+<pre><span class="s0">package </span><span class="s1">com.example.newslayout</span>
+
+<span class="s1">import android.net.Uri</span>
+<span class="s1">import androidx.appcompat.app.AppCompatActivity</span>
+<span class="s1">import android.os.Bundle</span>
+<span class="s1">import android.widget.Toast</span>
+<span class="s1">import androidx.browser.customtabs.CustomTabsIntent</span>
+<span class="s1">import androidx.recyclerview.widget.LinearLayoutManager</span>
+<span class="s1">import androidx.recyclerview.widget.RecyclerView</span>
+<span class="s1">import com.android.volley.Request</span>
+<span class="s1">import com.android.volley.Response</span>
+<span class="s1">import com.android.volley.toolbox.JsonObjectRequest</span>
+
+<span class="s0">class </span><span class="s1">MainActivity : AppCompatActivity()</span><span class="s0">, </span><span class="s1">NewsItemClicked {</span>
+
+   <span class="s1">private lateinit </span><span class="s0">var </span><span class="s1">mAdapter : NewsListAdopter</span>
+    <span class="s1">override </span><span class="s0">fun </span><span class="s1">onCreate(savedInstanceState: Bundle?) {</span>
+        <span class="s0">super</span><span class="s1">.onCreate(savedInstanceState)</span>
+        <span class="s1">setContentView(R.layout.activity_main)</span>
+
+        <span class="s0">val </span><span class="s1">recyclerView = findViewById&lt;RecyclerView&gt;(R.id.recyclerView)</span>
+        <span class="s1">recyclerView.layoutManager = LinearLayoutManager(</span><span class="s0">this</span><span class="s1">)</span>
+        <span class="s1">fetchData()</span>
+        <span class="s1">mAdapter = NewsListAdopter(</span><span class="s0">this</span><span class="s1">)</span>
+        <span class="s1">recyclerView.adapter=mAdapter</span>
+    <span class="s1">}</span>
+
+    <span class="s1">private </span><span class="s0">fun </span><span class="s1">fetchData() {</span>
+        <span class="s2">//volly library</span>
+        <span class="s0">val </span><span class="s1">url = </span><span class="s3">&quot;https://newsapi.org/v2/top-headlines?country=in&amp;category=business&amp;apiKey=bc818d6b7254433e96aedd000a7ff952&quot;</span>
+        <span class="s2">//making a request</span>
+        <span class="s0">val </span><span class="s1">jsonObjectRequest = </span><span class="s0">object</span><span class="s1">: JsonObjectRequest(</span>
+            <span class="s1">Request.Method.GET</span><span class="s0">,</span>
+            <span class="s1">url</span><span class="s0">,</span>
+            <span class="s0">null,</span>
+            <span class="s1">Response.Listener {</span>
+                <span class="s0">val </span><span class="s1">newsJsonArray = it.getJSONArray(</span><span class="s3">&quot;articles&quot;</span><span class="s1">)</span>
+                <span class="s0">val </span><span class="s1">newsArray = ArrayList&lt;News&gt;()</span>
+                <span class="s0">for</span><span class="s1">(i </span><span class="s0">in </span><span class="s4">0 </span><span class="s1">until newsJsonArray.length()) {</span>
+                    <span class="s0">val </span><span class="s1">newsJsonObject = newsJsonArray.getJSONObject(i)</span>
+                    <span class="s0">val </span><span class="s1">news = News(</span>
+                        <span class="s1">newsJsonObject.getString(</span><span class="s3">&quot;title&quot;</span><span class="s1">)</span><span class="s0">,</span>
+                        <span class="s1">newsJsonObject.getString(</span><span class="s3">&quot;author&quot;</span><span class="s1">)</span><span class="s0">,</span>
+                        <span class="s1">newsJsonObject.getString(</span><span class="s3">&quot;url&quot;</span><span class="s1">)</span><span class="s0">,</span>
+                        <span class="s1">newsJsonObject.getString(</span><span class="s3">&quot;urlToImage&quot;</span><span class="s1">)</span><span class="s0">,</span>
+                        <span class="s1">newsJsonObject.getString(</span><span class="s3">&quot;publishedAt&quot;</span><span class="s1">)</span>
+                    <span class="s1">)</span>
+                    <span class="s1">newsArray.add(news)</span>
+                <span class="s1">}</span>
+
+                <span class="s1">mAdapter.updateNews(newsArray)</span>
+            <span class="s1">}</span><span class="s0">,</span>
+            <span class="s1">Response.ErrorListener {</span>
+            <span class="s1">}</span>
+
+        <span class="s1">) {</span>
+            <span class="s1">override </span><span class="s0">fun </span><span class="s1">getHeaders(): MutableMap&lt;String</span><span class="s0">, </span><span class="s1">String&gt; {</span>
+                <span class="s0">val </span><span class="s1">headers = HashMap&lt;String</span><span class="s0">, </span><span class="s1">String&gt;()</span>
+                <span class="s1">headers[</span><span class="s3">&quot;User-Agent&quot;</span><span class="s1">] = </span><span class="s3">&quot;Mozilla/5.0&quot;</span>
+                <span class="s0">return </span><span class="s1">headers</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+
+        <span class="s1">MySingleton.getInstance(</span><span class="s0">this</span><span class="s1">).addToRequestQueue(jsonObjectRequest)</span>
+    <span class="s1">}</span>
+
+    <span class="s1">override </span><span class="s0">fun </span><span class="s1">onItemClicked(items: News) {</span>
+        <span class="s0">val </span><span class="s1">builder =  CustomTabsIntent.Builder()</span>
+        <span class="s0">val </span><span class="s1">customTabsIntent = builder.build()</span>
+        <span class="s1">customTabsIntent.launchUrl(</span><span class="s0">this, </span><span class="s1">Uri.parse(items.url))</span>
+    <span class="s1">}</span>
+
+<span class="s1">}</span></pre>
+</body>
+</html>
